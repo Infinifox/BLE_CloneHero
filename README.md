@@ -9,4 +9,4 @@ My initial intention was to attempt to "spoof" the device ID's and layout of a g
 
 This, however, didn't work out as planned. I chose to leave the code unchanged from this approach though, since everything was in a functional state and I didn't fancy gutting it. This is why there are 10 buttons defined in the BLE Gamepad configuration, and why there are some Vid and Pid values defined (they're commented out).
 
-This uses the (BLE Gamepad)[https://github.com/lemmingDev/ESP32-BLE-Gamepad] library, so make sure you have it installed.
+This uses the [BLE Gamepad](https://github.com/lemmingDev/ESP32-BLE-Gamepad) library, so make sure you have it installed.
