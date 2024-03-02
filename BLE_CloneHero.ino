@@ -1,25 +1,33 @@
 #include <Arduino.h>
 #include <BleGamepad.h>
 
-BleGamepad bleGamepad("Wireless Guitar", "Tom Fox", 100);
+BleGamepad bleGamepad("Wireless Guitar", "Infinifox", 100);
 
 #define numOfButtons 10
 #define numOfHats 1
 #define zAxisSamples 10
 
+// Button arrays
 byte previousButtonStates[numOfButtons];
 byte currentButtonStates[numOfButtons];
+
+// Button pin definitions
 byte buttonPins[numOfButtons] = {12, 14, 27, 26, 25, 19, 21};
 byte physicalButtons[numOfButtons] = {1, 2, 4, 3, 5, 7, 8};
 
+// D-Pad array
 byte previousHatStates[numOfHats * 4];
 byte currentHatStates[numOfHats * 4];
+
+// D-Pad pin definitions
 byte hatPins[numOfHats * 4] = {1, 23, 22, 3};
 
+// Whammy bar pin definition
 byte zAxisPin = 2;
 short currentZAxis;
 short previousZAxis;
 
+// Tilt pin definition
 byte sliderPin = 32;
 short currentSlider;
 short previousSlider;
@@ -28,7 +36,7 @@ byte tilted = false;
 byte tiltDuration = 18;
 byte currentTiltDuration = tiltDuration;
 
-// LEDs
+// LED stuff
 
 byte led1Pin = 16;
 byte led2Pin = 17;
@@ -71,14 +79,20 @@ void setup()
   digitalWrite(led3Pin, HIGH);
   digitalWrite(led4Pin, HIGH);
 
+  // I don't remember why this is here
   bleGamepad.setZ(0);
 
   Serial.begin(115200);
   Serial.println("Starting BLE work!");
 
   BleGamepadConfiguration bleGamepadConfig;
-  bleGamepadConfig.setVid(0x1430);
-  bleGamepadConfig.setPid(0x0719);
+
+  // This was an attempt to get Clone Hero to identify the controller as an official device.
+  // The goal was to remove the need to setup and bind buttons within CH.
+  // It didn't work... :'(
+
+  //bleGamepadConfig.setVid(0x1430);
+  //bleGamepadConfig.setPid(0x0719);
   //bleGamepadConfig.setHidReportId(uint8_t value)
 
   //bleGamepadConfig.setAxesMin(1935); // GUITAR HERO
@@ -122,8 +136,11 @@ void setLED(byte i)
 
 void loop()
 {
+  // Prints the values output from the whammy
   //Serial.println(analogRead(zAxisPin));
 
+
+  // If the guitar is not connected, cycle the 4 LEDs back and fourth
   if (!bleGamepad.isConnected())
   {
     currentMillis = millis();
@@ -240,6 +257,9 @@ void loop()
 
     bleGamepad.setHats(hatValues[0], hatValues[1], hatValues[2], hatValues[3]);
 
+    // Here I attempted to implement a deadzone for the bottom end of the whammy bar.
+    // It only sort of works. For some reason the value likes to overflow backwards
+    // to the highest value.
     if (analogRead(zAxisPin) > 220)
     {
       currentZAxis = map(analogRead(zAxisPin), 220, 3150, 0, 4096);
@@ -251,6 +271,8 @@ void loop()
       currentSlider = map(analogRead(sliderPin), 4095, 0, 0, 4095);
     }
 
+    // Only report states that have changed?
+    // I think that's what this does... I don't know if this is neccessary though.
     if (currentButtonStates != previousButtonStates || currentHatStates != previousHatStates || currentZAxis != previousZAxis || currentSlider != previousSlider)
     {
       for (byte currentIndex = 0; currentIndex < numOfButtons; currentIndex++)
@@ -273,6 +295,9 @@ void loop()
 
     //Serial.println(analogRead(zAxisPin));
 
+    // Pause for x ms
+    // Could probably do with being lower than 15ms for higher responsivitiy
+    // I expect this would reduce battery life though
     delay(15);
   }
 }
